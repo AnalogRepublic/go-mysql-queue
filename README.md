@@ -75,17 +75,19 @@ if err != nil {
 }
 
 // or manually pull an item off the queue
-message := queue.Pop()
+message, err := queue.Pop()
 
-err := doSomethingWithMessage(message)
+if err == nil {
+    err := doSomethingWithMessage(message)
 
-// If we have an error we can requeue it
-if err != nil {
-    queue.ReQueue(message)
+    // If we have an error we can requeue it
+    if err != nil {
+        queue.ReQueue(message)
+    }
+
+    // or say we're happy with it
+    queue.Done(message)
 }
-
-// or say we're happy with it
-queue.Done(message)
 
 time.AfterFunc(5 * time.Second, func() {
 

@@ -13,6 +13,14 @@ func (q *Queue) SetupDatabase() error {
 
 }
 
+func (q *Queue) Done(message *Message) {
+
+}
+
+func (q *Queue) ReQueue(message *Message) {
+
+}
+
 func (q *Queue) Listen(handle func(Message) bool, config ListenerConfig) (*Listener, error) {
 	listener := &Listener{
 		Queue:  q,
