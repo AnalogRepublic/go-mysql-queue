@@ -1,0 +1,10 @@
+package: msq
+import:
+- package: github.com/jinzhu/gorm
+  version: ^1.9.1
+- package: github.com/stretchr/testify
+  version: ~1.2.2
+- package: github.com/go-sql-driver/mysql
+  version: ~1.4.0
+- package: github.com/mattn/go-sqlite3
+  version: ~1.9.0

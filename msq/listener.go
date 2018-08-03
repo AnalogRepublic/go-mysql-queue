@@ -11,5 +11,5 @@ type Listener struct {
 }
 
 func (l *Listener) Start(handle func(Message) bool) error {
-
+	return nil
 }

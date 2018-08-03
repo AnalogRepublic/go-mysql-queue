@@ -1,0 +1,21 @@
+hash: f18af9cb5f3e4dc15436b7eda3f2de1766f0292802b7cc11520ec4d425300ff8
+updated: 2018-08-03T08:54:09.625381674+01:00
+imports:
+- name: github.com/go-sql-driver/mysql
+  version: 99ff426eb706cffe92ff3d058e168b278cabf7c7
+- name: github.com/jinzhu/gorm
+  version: 6ed508ec6a4ecb3531899a69cbc746ccf65a4166
+  subpackages:
+  - dialects/mysql
+  - dialects/sqlite
+- name: github.com/jinzhu/inflection
+  version: 04140366298a54a039076d798123ffa108fff46c
+- name: github.com/mattn/go-sqlite3
+  version: b3511bfdd742af558b54eb6160aca9446d762a19
+- name: github.com/stretchr/testify
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
+- name: google.golang.org/appengine
+  version: d1d14a4f7b9509a25ea8dc059e6820bbfb387beb
+  subpackages:
+  - cloudsql
+testImports: []

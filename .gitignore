@@ -10,3 +10,10 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Don't need to commit databases
+*.db
+
+# Some other files we don't need to commit.
+.DS_Store
+vendor/

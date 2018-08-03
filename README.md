@@ -35,9 +35,6 @@ queue.Configure(&msq.QueueConfig{
     Name: "my-queue", // The namespace for the Queue
 })
 
-// Make sure we have the table & schema that we need.
-err = queue.SetupDatabase()
-
 if err != nil {
     panic(err)
 }
