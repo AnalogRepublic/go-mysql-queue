@@ -17,19 +17,39 @@ func TestCanPush(t *testing.T) {
 
 	event, err := queue.Push(payload)
 
-	assert.Nil(t, err)
-	assert.NotNil(t, event)
-
-	assert.Equal(t, event.Namespace, queue.Config.Name)
-
-	encodedPayload, err := payload.Marshal()
-
 	if assert.Nil(t, err) {
-		assert.Equal(t, event.Payload, string(encodedPayload))
+		assert.NotNil(t, event)
+
+		assert.Equal(t, event.Namespace, queue.Config.Name)
+
+		encodedPayload, err := payload.Marshal()
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, event.Payload, string(encodedPayload))
+		}
 	}
 }
 
 func TestCanPop(t *testing.T) {
 	setup()
 	defer teardown()
+
+	config := *connectionConfig
+	queue, err := Connect(config)
+
+	queue.Configure(queueConfig)
+
+	_, err = queue.Push(payload)
+
+	if assert.Nil(t, err) {
+		event, err := queue.Pop()
+
+		if assert.Nil(t, err) {
+			encodedPayload, err := payload.Marshal()
+
+			if assert.Nil(t, err) {
+				assert.Equal(t, event.Payload, string(encodedPayload))
+			}
+		}
+	}
 }
