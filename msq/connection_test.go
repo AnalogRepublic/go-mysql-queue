@@ -6,20 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var connection *Connection
-var connectionConfig *ConnectionConfig
-
-func setup() {
-	connectionConfig = &ConnectionConfig{
-		Type:     "sqlite",
-		Database: "../test.db",
-	}
-}
-
-func teardown() {
-	connection.Close()
-}
-
 func TestConnectionConnect(t *testing.T) {
 	setup()
 	defer teardown()
