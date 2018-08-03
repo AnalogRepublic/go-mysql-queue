@@ -12,7 +12,7 @@ var connectionConfig *ConnectionConfig
 func setup() {
 	connectionConfig = &ConnectionConfig{
 		Type:     "sqlite",
-		Database: "./test.db",
+		Database: "../test.db",
 	}
 }
 
@@ -29,6 +29,23 @@ func TestConnectionConnect(t *testing.T) {
 	}
 
 	err := connection.Attempt()
+
+	assert.Nil(t, err)
+}
+
+func TestConnectionMigrateDatabase(t *testing.T) {
+	setup()
+	defer teardown()
+
+	connection = &Connection{
+		Config: *connectionConfig,
+	}
+
+	err := connection.Attempt()
+
+	assert.Nil(t, err)
+
+	err = connection.SetupDatabase()
 
 	assert.Nil(t, err)
 }

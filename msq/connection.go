@@ -1,6 +1,7 @@
 package msq
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/jinzhu/gorm"
@@ -15,7 +16,6 @@ type ConnectionConfig struct {
 	Password string
 	Database string
 	Charset  string
-	Engine   string
 }
 
 type Connection struct {
@@ -39,9 +39,16 @@ func (c *Connection) Close() error {
 	return c.db.Close()
 }
 
-func (c *Connection) SetupDatabase() {
-	engine := fmt.Sprintf("ENGINE=%s", c.getEngine())
-	c.db.Set("gorm:table_options", engine).AutoMigrate(&Event{})
+func (c *Connection) SetupDatabase() error {
+	c.db.AutoMigrate(&Event{})
+
+	hasTable := c.db.HasTable(&Event{})
+
+	if !hasTable {
+		return errors.New("Events table was not created")
+	}
+
+	return nil
 }
 
 func (c *Connection) getType() string {
@@ -50,14 +57,6 @@ func (c *Connection) getType() string {
 	}
 
 	return c.Config.Type
-}
-
-func (c *Connection) getEngine() string {
-	if c.Config.Engine == "" {
-		c.Config.Engine = "InnoDB"
-	}
-
-	return c.Config.Engine
 }
 
 func (c *Connection) getConnectionString() string {
