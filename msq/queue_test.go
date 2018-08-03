@@ -105,3 +105,34 @@ func TestReQueue(t *testing.T) {
 		}
 	}
 }
+
+func TestListen(t *testing.T) {
+	setup()
+	defer teardown()
+
+	config := *connectionConfig
+	queue, err := Connect(config)
+
+	queue.Configure(queueConfig)
+
+	queuedEvent, err := queue.Push(payload)
+
+	if assert.Nil(t, err) {
+		listener, err := queue.Listen(func(event Event) bool {
+			assert.Equal(t, queuedEvent.UID, event.UID)
+			return true
+		}, listenerConfig)
+
+		if assert.Nil(t, err, "We should be able to create a listener") {
+			assert.Equal(t, listener.Config.Interval, listenerConfig.Interval)
+			assert.Equal(t, listener.Config.Timeout, listenerConfig.Timeout)
+
+			assert.True(t, listener.Started, "The listener should be started")
+
+			err := listener.Stop()
+			assert.Nil(t, err, "We should not error when trying to stop")
+
+			assert.False(t, listener.Started, "The listener should now be stopped")
+		}
+	}
+}

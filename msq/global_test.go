@@ -8,6 +8,7 @@ var connection *Connection
 var connectionConfig *ConnectionConfig
 var payload Payload
 var queueConfig *QueueConfig
+var listenerConfig ListenerConfig
 
 func setup() {
 	connectionConfig = &ConnectionConfig{
@@ -27,6 +28,11 @@ func setup() {
 		Name:       "testing",
 		MaxRetries: 3,
 		MessageTTL: 5 * time.Minute,
+	}
+
+	listenerConfig = ListenerConfig{
+		Interval: 1 * time.Second,
+		Timeout:  time.Minute,
 	}
 }
 
