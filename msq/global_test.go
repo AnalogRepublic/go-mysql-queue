@@ -1,6 +1,8 @@
 package msq
 
-import "time"
+import (
+	"time"
+)
 
 var connection *Connection
 var connectionConfig *ConnectionConfig
@@ -29,5 +31,7 @@ func setup() {
 }
 
 func teardown() {
+	connection.Database().DropTable(&Event{})
+
 	connection.Close()
 }

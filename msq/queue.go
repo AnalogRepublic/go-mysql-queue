@@ -1,7 +1,6 @@
 package msq
 
 import (
-	"errors"
 	"time"
 )
 
@@ -20,12 +19,12 @@ func (q *Queue) Configure(config *QueueConfig) {
 	q.Config = config
 }
 
-func (q *Queue) Done(event *Event) {
-
+func (q *Queue) Done(event *Event) error {
+	return q.Connection.Database().Unscoped().Delete(event).Error
 }
 
-func (q *Queue) ReQueue(event *Event) {
-
+func (q *Queue) ReQueue(event *Event) error {
+	return q.Connection.Database().Unscoped().Model(event).Update("deleted_at", nil).Error
 }
 
 func (q *Queue) Listen(handle func(Event) bool, config ListenerConfig) (*Listener, error) {
@@ -53,6 +52,8 @@ func (q *Queue) Pop() (*Event, error) {
 		return event, err
 	}
 
+	db.Delete(event)
+
 	return event, nil
 }
 
@@ -66,12 +67,13 @@ func (q *Queue) Push(payload Payload) (*Event, error) {
 	event := &Event{
 		Namespace: q.Config.Name,
 		Payload:   string(encodedPayload),
+		Retries:   1,
 	}
 
-	created := q.Connection.Database().NewRecord(event)
+	err = q.Connection.Database().Create(event).Error
 
-	if !created {
-		return &Event{}, errors.New("Unable to create event for payload")
+	if err != nil {
+		return &Event{}, err
 	}
 
 	return event, nil
