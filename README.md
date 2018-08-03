@@ -40,8 +40,8 @@ if err != nil {
 }
 
 // Setup an automatic listener.
-_, err := queue.Listen(func(message msq.Message) {
-    payload := message.Payload
+_, err := queue.Listen(func(event msq.Event) {
+    payload := event.Payload
     
     fmt.Println(payload["example"].(string))
 
@@ -72,18 +72,18 @@ if err != nil {
 }
 
 // or manually pull an item off the queue
-message, err := queue.Pop()
+event, err := queue.Pop()
 
 if err == nil {
-    err := doSomethingWithMessage(message)
+    err := doSomethingWithMessage(event)
 
     // If we have an error we can requeue it
     if err != nil {
-        queue.ReQueue(message)
+        queue.ReQueue(event)
     }
 
     // or say we're happy with it
-    queue.Done(message)
+    queue.Done(event)
 }
 
 time.AfterFunc(5 * time.Second, func() {

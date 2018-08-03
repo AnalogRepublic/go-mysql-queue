@@ -10,6 +10,6 @@ type Listener struct {
 	Config ListenerConfig
 }
 
-func (l *Listener) Start(handle func(Message) bool) error {
+func (l *Listener) Start(handle func(Event) bool) error {
 	return nil
 }

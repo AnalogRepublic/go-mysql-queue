@@ -39,6 +39,10 @@ func (c *Connection) Close() error {
 	return c.db.Close()
 }
 
+func (c *Connection) Database() *gorm.DB {
+	return c.db
+}
+
 func (c *Connection) SetupDatabase() error {
 	c.db.AutoMigrate(&Event{})
 

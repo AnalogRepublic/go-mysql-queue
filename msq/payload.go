@@ -2,10 +2,6 @@ package msq
 
 import "encoding/json"
 
-type Message struct {
-	Payload Payload
-}
-
 type Payload map[string]interface{}
 
 func (p *Payload) Marshal() ([]byte, error) {
