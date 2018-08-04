@@ -31,7 +31,7 @@ func setup() {
 	}
 
 	listenerConfig = ListenerConfig{
-		Interval: 500 * time.Millisecond,
+		Interval: time.Second,
 		Timeout:  500 * time.Millisecond,
 	}
 }

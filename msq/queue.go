@@ -24,7 +24,12 @@ func (q *Queue) Done(event *Event) error {
 }
 
 func (q *Queue) ReQueue(event *Event) error {
-	return q.Connection.Database().Unscoped().Model(event).Update("deleted_at", nil).Error
+	return q.Connection.Database().
+		Unscoped().
+		Model(event).
+		Update("deleted_at", nil).
+		Update("retries", event.Retries+1).
+		Error
 }
 
 func (q *Queue) Listen(handle func(Event) bool, config ListenerConfig) *Listener {
@@ -44,7 +49,7 @@ func (q *Queue) Pop() (*Event, error) {
 	db := q.Connection.Database()
 
 	err := db.Order("created_at desc").
-		Where("retries < ?", q.Config.MaxRetries).
+		Where("retries <= ?", q.Config.MaxRetries).
 		Where("namespace = ?", q.Config.Name).
 		First(event).Error
 
