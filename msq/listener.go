@@ -18,7 +18,6 @@ type Listener struct {
 }
 
 func (l *Listener) Start(handle func(Event) bool) {
-	// TODO: This shit
 	if l.Started {
 		panic("Cannot start the listener whilst it is already running")
 	}
