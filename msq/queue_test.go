@@ -2,6 +2,7 @@ package msq
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -118,21 +119,22 @@ func TestListen(t *testing.T) {
 	queuedEvent, err := queue.Push(payload)
 
 	if assert.Nil(t, err) {
-		listener, err := queue.Listen(func(event Event) bool {
+		listener := queue.Listen(func(event Event) bool {
 			assert.Equal(t, queuedEvent.UID, event.UID)
 			return true
 		}, listenerConfig)
 
-		if assert.Nil(t, err, "We should be able to create a listener") {
-			assert.Equal(t, listener.Config.Interval, listenerConfig.Interval)
-			assert.Equal(t, listener.Config.Timeout, listenerConfig.Timeout)
+		time.Sleep(time.Second)
 
-			assert.True(t, listener.Started, "The listener should be started")
+		assert.Equal(t, listener.Config.Interval, listenerConfig.Interval)
+		assert.Equal(t, listener.Config.Timeout, listenerConfig.Timeout)
 
-			err := listener.Stop()
-			assert.Nil(t, err, "We should not error when trying to stop")
+		assert.True(t, listener.Started, "The listener should be started")
 
-			assert.False(t, listener.Started, "The listener should now be stopped")
-		}
+		err := listener.Stop()
+		assert.Nil(t, err, "We should not error when trying to stop")
+
+		time.Sleep(time.Second)
+		assert.False(t, listener.Started, "The listener should now be stopped")
 	}
 }

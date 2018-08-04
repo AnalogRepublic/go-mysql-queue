@@ -27,15 +27,15 @@ func (q *Queue) ReQueue(event *Event) error {
 	return q.Connection.Database().Unscoped().Model(event).Update("deleted_at", nil).Error
 }
 
-func (q *Queue) Listen(handle func(Event) bool, config ListenerConfig) (*Listener, error) {
+func (q *Queue) Listen(handle func(Event) bool, config ListenerConfig) *Listener {
 	listener := &Listener{
 		Queue:  *q,
 		Config: config,
 	}
 
-	err := listener.Start(handle)
+	go listener.Start(handle)
 
-	return listener, err
+	return listener
 }
 
 func (q *Queue) Pop() (*Event, error) {
