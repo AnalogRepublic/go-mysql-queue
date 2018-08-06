@@ -39,36 +39,24 @@ if err != nil {
     panic(err)
 }
 
-// Setup an automatic listener.
-_, err := queue.Listen(func(event msq.Event) {
-    payload := event.Payload
-    
-    fmt.Println(payload["example"].(string))
+// Using a listener
+listener := &Listener{
+    Queue:  *queue,
+    Config: listenerConfig,
+}
 
-    err := library.DoSomething(payload["example"].(string))
+ctx, _ := listener.Context()
 
-    if err != nil {
-        // if we have an error, tell it to
-        // be-requeued.
-        return false
-    }
-    
-    // Otherwise remove it.
+listener.Start(func(event Event) bool {
+    assert.Equal(t, queuedEvent.UID, event.UID)
     return true
-}, msq.ListenerConfig{
-    // How often we're fetching a new message
-    Interval: time.Millisecond,
-    
-    // The number of messages to fetch at a time
-    BatchSize: 1,
-
-    // After 10 seconds we'll cut off the processing of a message.
-    // and mark it to be requeued.
-    Timeout: 10 * time.Second,
 })
 
-if err != nil {
-    panic(err)
+fmt.Println("Listener started")
+
+select {
+case <-ctx.Done():
+    fmt.Println("Listener stopped")
 }
 
 // or manually pull an item off the queue

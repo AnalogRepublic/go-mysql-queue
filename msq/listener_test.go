@@ -24,23 +24,27 @@ func TestStartStop(t *testing.T) {
 			Config: listenerConfig,
 		}
 
-		go listener.Start(func(event Event) bool {
+		assert.Equal(t, listener.Config.Interval, listenerConfig.Interval)
+		assert.Equal(t, listener.Config.Timeout, listenerConfig.Timeout)
+
+		ctx := listener.Context()
+
+		listener.Start(func(event Event) bool {
 			assert.Equal(t, queuedEvent.UID, event.UID)
 			return true
 		})
 
-		time.Sleep(time.Second)
+		go func() {
+			assert.True(t, listener.Running, "The listener should be running")
 
-		assert.Equal(t, listener.Config.Interval, listenerConfig.Interval)
-		assert.Equal(t, listener.Config.Timeout, listenerConfig.Timeout)
+			time.Sleep(time.Second)
+			listener.Stop()
+		}()
 
-		assert.True(t, listener.Started, "The listener should be started")
-
-		err := listener.Stop()
-		assert.Nil(t, err, "We should not error when trying to stop")
-
-		time.Sleep(time.Second)
-		assert.False(t, listener.Started, "The listener should now be stopped")
+		select {
+		case <-ctx.Done():
+			assert.False(t, listener.Running, "The listener should no longer be running")
+		}
 	}
 }
 
@@ -61,32 +65,36 @@ func TestHandleFail(t *testing.T) {
 			Config: listenerConfig,
 		}
 
-		go listener.Start(func(event Event) bool {
-			assert.Equal(t, queuedEvent.UID, event.UID)
-			return false
-		})
-
-		time.Sleep(time.Second)
-
 		assert.Equal(t, listener.Config.Interval, listenerConfig.Interval)
 		assert.Equal(t, listener.Config.Timeout, listenerConfig.Timeout)
 
-		assert.True(t, listener.Started, "The listener should be started")
+		ctx := listener.Context()
 
-		poppedEvent, err := queue.Pop()
+		listener.Start(func(event Event) bool {
+			assert.Equal(t, queuedEvent.UID, event.UID)
+			return true
+		})
 
-		if assert.Nil(t, err, "We should get an event back as it should've been re-queued") {
-			assert.Equal(t, poppedEvent.UID, queuedEvent.UID)
+		go func() {
+			assert.True(t, listener.Running, "The listener should be started")
+			time.Sleep(time.Second)
+
+			poppedEvent, err := queue.Pop()
+
+			if assert.Nil(t, err, "We should get an event back as it should've been re-queued") {
+				assert.Equal(t, poppedEvent.UID, queuedEvent.UID)
+				queue.Done(poppedEvent)
+			}
+
 			queue.Done(poppedEvent)
+
+			listener.Stop()
+		}()
+
+		select {
+		case <-ctx.Done():
+			assert.False(t, listener.Running, "The listener should no longer be running")
 		}
-
-		queue.Done(poppedEvent)
-
-		err = listener.Stop()
-		assert.Nil(t, err, "We should not error when trying to stop")
-
-		time.Sleep(time.Second)
-		assert.False(t, listener.Started, "The listener should now be stopped")
 	}
 }
 
@@ -107,30 +115,33 @@ func TestHandleTimeout(t *testing.T) {
 			Config: listenerConfig,
 		}
 
-		go listener.Start(func(event Event) bool {
-			time.Sleep(time.Second)
+		assert.Equal(t, listener.Config.Interval, listenerConfig.Interval)
+		assert.Equal(t, listener.Config.Timeout, listenerConfig.Timeout)
+
+		ctx := listener.Context()
+
+		listener.Start(func(event Event) bool {
 			assert.Equal(t, queuedEvent.UID, event.UID)
 			return true
 		})
 
-		time.Sleep(time.Second)
+		go func() {
+			assert.True(t, listener.Running, "The listener should be started")
+			time.Sleep(time.Second)
 
-		assert.Equal(t, listener.Config.Interval, listenerConfig.Interval)
-		assert.Equal(t, listener.Config.Timeout, listenerConfig.Timeout)
+			poppedEvent, err := queue.Pop()
 
-		assert.True(t, listener.Started, "The listener should be started")
+			if assert.Nil(t, err, "We should get an event back as it should've been re-queued") {
+				assert.Equal(t, poppedEvent.UID, queuedEvent.UID)
+				queue.Done(poppedEvent)
+			}
 
-		poppedEvent, err := queue.Pop()
+			listener.Stop()
+		}()
 
-		if assert.Nil(t, err, "We should get an event back as it should've been re-queued") {
-			assert.Equal(t, poppedEvent.UID, queuedEvent.UID)
-			queue.Done(poppedEvent)
+		select {
+		case <-ctx.Done():
+			assert.False(t, listener.Running, "The listener should no longer be running")
 		}
-
-		err = listener.Stop()
-		assert.Nil(t, err, "We should not error when trying to stop")
-
-		time.Sleep(time.Second)
-		assert.False(t, listener.Started, "The listener should now be stopped")
 	}
 }

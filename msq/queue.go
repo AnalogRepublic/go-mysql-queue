@@ -32,17 +32,6 @@ func (q *Queue) ReQueue(event *Event) error {
 		Error
 }
 
-func (q *Queue) Listen(handle func(Event) bool, config ListenerConfig) *Listener {
-	listener := &Listener{
-		Queue:  *q,
-		Config: config,
-	}
-
-	go listener.Start(handle)
-
-	return listener
-}
-
 func (q *Queue) Pop() (*Event, error) {
 	event := &Event{}
 
