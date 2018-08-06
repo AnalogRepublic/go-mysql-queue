@@ -1,10 +1,5 @@
-# go-mysql-queue
+# go-mysql-queue [https://travis-ci.org/AnalogRepublic/go-mysql-queue.svg?branch=master](https://travis-ci.org/AnalogRepublic/go-mysql-queue)
 A Very Basic Queue / Job implementation which uses MySQL for underlying storage
-
-## Configuration
-
-- Setup a MySQL database or a path for an SQLite database.
-- 
 
 ## Example Usage
 
