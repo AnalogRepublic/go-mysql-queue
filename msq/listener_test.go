@@ -121,6 +121,7 @@ func TestHandleTimeout(t *testing.T) {
 		ctx := listener.Context()
 
 		listener.Start(func(event Event) bool {
+			time.Sleep(time.Second)
 			assert.Equal(t, queuedEvent.UID, event.UID)
 			return true
 		})
