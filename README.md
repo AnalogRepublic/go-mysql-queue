@@ -1,6 +1,9 @@
 # go-mysql-queue 
 
-[![Build Status](https://travis-ci.org/AnalogRepublic/go-mysql-queue.svg?branch=master)](https://travis-ci.org/AnalogRepublic/go-mysql-queue)
+[![Build Status](https://travis-ci.org/AnalogRepublic/go-mysql-queue.svg?branch=master)](https://travis-ci.org/AnalogRepublic/go-mysql-queue) 
+[![GitHub release](https://img.shields.io/github/release/analogrepublic/go-mysql-queue.svg)](https://github.com/AnalogRepublic/go-mysql-queue)
+
+
 
 A Very Basic Queue / Job implementation which uses MySQL for underlying storage
 
