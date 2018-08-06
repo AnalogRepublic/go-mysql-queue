@@ -18,7 +18,7 @@ import (
 
 // Connect to our backend database
 queue, err := msq.Connect(msq.ConnectionConfig{
-    Type: "mysql", // or could use "sqlite"
+    Type: "mysql", // or could use "sqlite", where the "database" field is the full path, e.g. "./test.db"
     Host: "localhost",
     Username: "root",
     Password: "root",
@@ -30,9 +30,8 @@ if err != nil {
 }
 
 queue.Configure(&msq.QueueConfig{
-    MaxRetries: 3, // The maximum number of times the message can be retried.
-    MessageTTL: 5 * time.Second, // the longest time they'll live in the queue before being added to the dead-letter table.
     Name: "my-queue", // The namespace for the Queue
+    MaxRetries: 3, // The maximum number of times the message can be retried.
 })
 
 if err != nil {
@@ -45,10 +44,10 @@ listener := &Listener{
     Config: listenerConfig,
 }
 
-ctx, _ := listener.Context()
+ctx := listener.Context()
 
 listener.Start(func(event Event) bool {
-    assert.Equal(t, queuedEvent.UID, event.UID)
+    fmt.Println("Received event " + event.UID)
     return true
 })
 
@@ -68,14 +67,13 @@ if err == nil {
     // If we have an error we can requeue it
     if err != nil {
         queue.ReQueue(event)
+    } else {
+        // or say we're happy with it
+        queue.Done(event)
     }
-
-    // or say we're happy with it
-    queue.Done(event)
 }
 
 time.AfterFunc(5 * time.Second, func() {
-
     // Push a new item onto the Queue
     queue.Push(msq.Payload{
         "example": "data",
