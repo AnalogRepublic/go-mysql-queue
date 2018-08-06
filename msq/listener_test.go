@@ -72,21 +72,19 @@ func TestHandleFail(t *testing.T) {
 
 		listener.Start(func(event Event) bool {
 			assert.Equal(t, queuedEvent.UID, event.UID)
-			return true
+			return false
 		})
 
 		go func() {
 			assert.True(t, listener.Running, "The listener should be started")
-			time.Sleep(time.Second)
+			time.Sleep(2 * listenerConfig.Interval)
 
-			poppedEvent, err := queue.Pop()
+			failedEvents, err := queue.Failed()
 
-			if assert.Nil(t, err, "We should get an event back as it should've been re-queued") {
-				assert.Equal(t, poppedEvent.UID, queuedEvent.UID)
-				queue.Done(poppedEvent)
+			if assert.Nil(t, err, "We should get a list of failed events back") {
+				assert.Equal(t, queuedEvent.UID, failedEvents[0].UID)
+				queue.Done(failedEvents[0])
 			}
-
-			queue.Done(poppedEvent)
 
 			listener.Stop()
 		}()
@@ -121,20 +119,19 @@ func TestHandleTimeout(t *testing.T) {
 		ctx := listener.Context()
 
 		listener.Start(func(event Event) bool {
-			time.Sleep(time.Second)
-			assert.Equal(t, queuedEvent.UID, event.UID)
-			return true
+			time.Sleep(2 * listenerConfig.Timeout)
+			return false
 		})
 
 		go func() {
 			assert.True(t, listener.Running, "The listener should be started")
-			time.Sleep(time.Second)
+			time.Sleep(2 * listenerConfig.Interval)
 
-			poppedEvent, err := queue.Pop()
+			failedEvents, err := queue.Failed()
 
-			if assert.Nil(t, err, "We should get an event back as it should've been re-queued") {
-				assert.Equal(t, poppedEvent.UID, queuedEvent.UID)
-				queue.Done(poppedEvent)
+			if assert.Nil(t, err, "We should get a list of failed events back") {
+				assert.Equal(t, queuedEvent.UID, failedEvents[0].UID)
+				queue.Done(failedEvents[0])
 			}
 
 			listener.Stop()

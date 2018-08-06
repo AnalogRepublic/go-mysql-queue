@@ -2,7 +2,6 @@ package msq
 
 import (
 	"context"
-	"sync"
 	"time"
 )
 
@@ -30,8 +29,7 @@ func (l *Listener) Context() context.Context {
 }
 
 func (l *Listener) Start(handle func(Event) bool) {
-	var wg sync.WaitGroup
-	wg.Add(1)
+	started := make(chan bool)
 
 	go func() {
 		if l.Running {
@@ -40,25 +38,30 @@ func (l *Listener) Start(handle func(Event) bool) {
 
 		defer l.cancel()
 
-		l.Running = true
+		firstTick := true
+
 		l.interval = time.NewTicker(l.Config.Interval).C
 		l.stop = make(chan bool)
-
-		wg.Done()
 
 		for {
 			select {
 			case <-l.interval:
-				if !l.Running {
+				if !firstTick && !l.Running {
 					return
 				}
+
+				if firstTick {
+					l.Running = true
+					started <- true
+					firstTick = false
+				}
+
+				timeout := time.NewTimer(l.Config.Timeout).C
 
 				go func() {
 					event, err := l.Queue.Pop()
 
 					if err == nil {
-						timeout := time.NewTimer(l.Config.Timeout).C
-
 						var resultValue bool
 						result := make(chan bool)
 
@@ -75,6 +78,8 @@ func (l *Listener) Start(handle func(Event) bool) {
 							} else {
 								l.Queue.ReQueue(event)
 							}
+
+							break
 						}
 					}
 				}()
@@ -85,7 +90,7 @@ func (l *Listener) Start(handle func(Event) bool) {
 		}
 	}()
 
-	wg.Wait()
+	<-started
 }
 
 func (l *Listener) Stop() {

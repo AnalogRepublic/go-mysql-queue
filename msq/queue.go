@@ -24,11 +24,20 @@ func (q *Queue) Done(event *Event) error {
 }
 
 func (q *Queue) ReQueue(event *Event) error {
+
+	now := time.Now()
+	pushback := time.Now().Add(time.Millisecond * (time.Duration(event.Retries) * 100))
+	retries := event.Retries + 1
+
 	return q.Connection.Database().
 		Unscoped().
 		Model(event).
-		Update("deleted_at", nil).
-		Update("retries", event.Retries+1).
+		Updates(map[string]interface{}{
+			"deleted_at": nil,
+			"created_at": pushback,
+			"updated_at": now,
+			"retries":    retries,
+		}).
 		Error
 }
 
@@ -38,6 +47,7 @@ func (q *Queue) Pop() (*Event, error) {
 	db := q.Connection.Database()
 
 	err := db.Order("created_at desc").
+		Where("created_at <= ?", time.Now()).
 		Where("retries <= ?", q.Config.MaxRetries).
 		Where("namespace = ?", q.Config.Name).
 		First(event).Error
@@ -49,6 +59,23 @@ func (q *Queue) Pop() (*Event, error) {
 	db.Delete(event)
 
 	return event, nil
+}
+
+func (q *Queue) Failed() ([]*Event, error) {
+	events := []*Event{}
+
+	db := q.Connection.Database()
+
+	err := db.Unscoped().Order("created_at desc").
+		Where("namespace = ?", q.Config.Name).
+		Find(&events).
+		Error
+
+	if err != nil {
+		return events, err
+	}
+
+	return events, nil
 }
 
 func (q *Queue) Push(payload Payload) (*Event, error) {

@@ -26,13 +26,13 @@ func setup() {
 
 	queueConfig = &QueueConfig{
 		Name:       "testing",
-		MaxRetries: 3,
+		MaxRetries: 4,
 		MessageTTL: 5 * time.Minute,
 	}
 
 	listenerConfig = ListenerConfig{
-		Interval: time.Second,
-		Timeout:  500 * time.Millisecond,
+		Interval: 100 * time.Millisecond,
+		Timeout:  250 * time.Millisecond,
 	}
 }
 
