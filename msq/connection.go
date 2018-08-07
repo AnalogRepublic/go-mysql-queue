@@ -16,6 +16,7 @@ type ConnectionConfig struct {
 	Password string
 	Database string
 	Charset  string
+	Locale   string
 }
 
 type Connection struct {
@@ -66,14 +67,19 @@ func (c *Connection) getType() string {
 func (c *Connection) getConnectionString() string {
 	dbType := c.getType()
 
+	if c.Config.Locale == "" {
+		c.Config.Locale = "Local"
+	}
+
 	if dbType == "mysql" {
 		return fmt.Sprintf(
-			"%s:%s@%s/%s?charset=%s&parseTime=True&loc=local",
+			"%s:%s@%s/%s?charset=%s&parseTime=True&loc=%s",
 			c.Config.Username,
 			c.Config.Password,
 			c.Config.Host,
 			c.Config.Database,
 			c.Config.Charset,
+			c.Config.Locale,
 		)
 	} else if dbType == "sqlite3" {
 		return c.Config.Database

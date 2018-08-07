@@ -24,6 +24,7 @@ queue, err := msq.Connect(msq.ConnectionConfig{
     Username: "root",
     Password: "root",
     Database: "queue",
+    Locale: "UTC",
 })
 
 if err != nil {
