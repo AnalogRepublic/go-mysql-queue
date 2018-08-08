@@ -28,6 +28,14 @@ type Connection struct {
 }
 
 func (c *Connection) Attempt() error {
+	if c.Config.Locale == "" {
+		c.Config.Locale = "Local"
+	}
+
+	if c.Config.Charset == "" {
+		c.Config.Charset = "utf8mb4"
+	}
+
 	db, err := gorm.Open(c.getType(), c.getConnectionString())
 
 	if err != nil {
@@ -50,9 +58,16 @@ func (c *Connection) Database() *gorm.DB {
 }
 
 func (c *Connection) SetupDatabase() error {
-	c.db.AutoMigrate(&Event{})
+	dbScope := c.db
 
-	hasTable := c.db.HasTable(&Event{})
+	if c.getType() != "sqlite3" {
+		tableOptions := fmt.Sprintf("ENGINE=InnoDB DEFAULT CHARSET=%s", c.Config.Charset)
+		dbScope = dbScope.Set("gorm:table_options", tableOptions)
+	}
+
+	dbScope = dbScope.AutoMigrate(&Event{})
+
+	hasTable := dbScope.HasTable(&Event{})
 
 	if !hasTable {
 		return errors.New("Events table was not created")
@@ -71,10 +86,6 @@ func (c *Connection) getType() string {
 
 func (c *Connection) getConnectionString() string {
 	dbType := c.getType()
-
-	if c.Config.Locale == "" {
-		c.Config.Locale = "Local"
-	}
 
 	if dbType == "mysql" {
 		return fmt.Sprintf(

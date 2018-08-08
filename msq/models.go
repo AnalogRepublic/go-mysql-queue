@@ -10,7 +10,7 @@ type Event struct {
 	UID       string `gorm:"type:varchar(255);index:uid"`
 	Namespace string `gorm:"type:varchar(255);index:namespace;not null"`
 	Payload   string `gorm:"type:text"`
-	Retries   int    `gorm:"size:1;index:retries;default:'0'"`
+	Retries   int    `gorm:"size:1;index:retries;default:0"`
 }
 
 func (e *Event) BeforeCreate(scope *gorm.Scope) error {

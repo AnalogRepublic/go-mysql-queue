@@ -14,6 +14,7 @@ func setup() {
 	connectionConfig = &ConnectionConfig{
 		Type:     "sqlite",
 		Database: "../test.db",
+		Charset:  "utf8",
 	}
 
 	payload = Payload{
