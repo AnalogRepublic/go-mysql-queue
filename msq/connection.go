@@ -3,6 +3,7 @@ package msq
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -12,6 +13,7 @@ import (
 type ConnectionConfig struct {
 	Type     string
 	Host     string
+	Port     int
 	Username string
 	Password string
 	Database string
@@ -73,10 +75,11 @@ func (c *Connection) getConnectionString() string {
 
 	if dbType == "mysql" {
 		return fmt.Sprintf(
-			"%s:%s@%s/%s?charset=%s&parseTime=True&loc=%s",
+			"%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=%s",
 			c.Config.Username,
 			c.Config.Password,
 			c.Config.Host,
+			strconv.Itoa(c.Config.Port),
 			c.Config.Database,
 			c.Config.Charset,
 			c.Config.Locale,
