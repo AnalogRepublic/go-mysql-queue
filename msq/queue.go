@@ -33,12 +33,11 @@ func (q *Queue) ReQueue(event *Event) error {
 		Unscoped().
 		Model(event).
 		Updates(map[string]interface{}{
-			"deleted_at": nil,
-			"created_at": pushback,
-			"updated_at": now,
-			"retries":    retries,
-		}).
-		Error
+		"deleted_at": nil,
+		"created_at": pushback,
+		"updated_at": now,
+		"retries":    retries,
+	}).Error
 }
 
 func (q *Queue) Pop() (*Event, error) {
@@ -46,7 +45,7 @@ func (q *Queue) Pop() (*Event, error) {
 
 	db := q.Connection.Database()
 
-	err := db.Order("created_at desc").
+	err := db.Order("created_at asc").
 		Where("created_at <= ?", time.Now()).
 		Where("retries <= ?", q.Config.MaxRetries).
 		Where("namespace = ?", q.Config.Name).
