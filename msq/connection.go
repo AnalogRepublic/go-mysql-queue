@@ -19,6 +19,7 @@ type ConnectionConfig struct {
 	Database string
 	Charset  string
 	Locale   string
+	Logging  bool
 }
 
 type Connection struct {
@@ -32,6 +33,8 @@ func (c *Connection) Attempt() error {
 	if err != nil {
 		return err
 	}
+
+	db.LogMode(c.Config.Logging)
 
 	c.db = db
 
