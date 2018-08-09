@@ -17,3 +17,13 @@ func (e *Event) BeforeCreate(scope *gorm.Scope) error {
 	scope.SetColumn("UID", uuid.NewV4().String())
 	return nil
 }
+
+func (e *Event) GetPayload() (Payload, error) {
+	payload, err := payload.UnMarshal([]byte(e.Payload))
+
+	if err != nil {
+		return Payload{}, err
+	}
+
+	return *payload, nil
+}
