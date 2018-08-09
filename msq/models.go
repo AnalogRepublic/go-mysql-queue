@@ -19,11 +19,12 @@ func (e *Event) BeforeCreate(scope *gorm.Scope) error {
 }
 
 func (e *Event) GetPayload() (Payload, error) {
-	payload, err := payload.UnMarshal([]byte(e.Payload))
+	p := Payload{}
+	returnPayload, err := p.UnMarshal([]byte(e.Payload))
 
 	if err != nil {
 		return Payload{}, err
 	}
 
-	return *payload, nil
+	return *returnPayload, nil
 }
