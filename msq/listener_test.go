@@ -29,10 +29,13 @@ func TestStartStop(t *testing.T) {
 
 		ctx := listener.Context()
 
-		listener.Start(func(event Event) bool {
-			assert.Equal(t, queuedEvent.UID, event.UID)
+		listener.Start(func(events []Event) bool {
+			if len(events) > 0 {
+				assert.Equal(t, queuedEvent.UID, events[0].UID)
+			}
+
 			return true
-		})
+		}, 1)
 
 		go func() {
 			assert.True(t, listener.Running, "The listener should be running")
@@ -70,10 +73,12 @@ func TestHandleFail(t *testing.T) {
 
 		ctx := listener.Context()
 
-		listener.Start(func(event Event) bool {
-			assert.Equal(t, queuedEvent.UID, event.UID)
+		listener.Start(func(events []Event) bool {
+			if len(events) > 0 {
+				assert.Equal(t, queuedEvent.UID, events[0].UID)
+			}
 			return false
-		})
+		}, 1)
 
 		go func() {
 			assert.True(t, listener.Running, "The listener should be started")
@@ -118,10 +123,10 @@ func TestHandleTimeout(t *testing.T) {
 
 		ctx := listener.Context()
 
-		listener.Start(func(event Event) bool {
+		listener.Start(func(events []Event) bool {
 			time.Sleep(2 * listenerConfig.Timeout)
 			return false
-		})
+		}, 1)
 
 		go func() {
 			assert.True(t, listener.Running, "The listener should be started")

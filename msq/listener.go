@@ -28,8 +28,12 @@ func (l *Listener) Context() context.Context {
 	return l.ctx
 }
 
-func (l *Listener) Start(handle func(Event) bool) {
+func (l *Listener) Start(handle func([]Event) bool, num int) {
 	started := make(chan bool)
+
+	if num < 1 {
+		num = 1
+	}
 
 	go func() {
 		if l.Running {
@@ -58,29 +62,45 @@ func (l *Listener) Start(handle func(Event) bool) {
 
 				timeout := time.NewTimer(l.Config.Timeout).C
 
+				// Go off and actually pull the events
 				go func() {
-					event, err := l.Queue.Pop()
+					var resultValue bool
+					result := make(chan bool)
+					events := []Event{}
 
-					if err == nil {
-						var resultValue bool
-						result := make(chan bool)
+					// Depending on how many we want, that's what
+					// we will pop off the queue
+					for i := 0; i < num; i++ {
+						event, err := l.Queue.Pop()
 
-						go func(event Event, handle func(Event) bool, result chan bool) {
-							result <- handle(event)
-						}(*event, handle, result)
-
-						select {
-						case <-timeout:
-							l.Queue.ReQueue(event)
-						case resultValue = <-result:
-							if resultValue {
-								l.Queue.Done(event)
-							} else {
-								l.Queue.ReQueue(event)
-							}
-
-							break
+						if err == nil {
+							events = append(events, *event)
+							continue
 						}
+					}
+
+					// Go off and handle those events
+					go func(events []Event, handle func([]Event) bool, result chan bool) {
+						result <- handle(events)
+					}(events, handle, result)
+
+					// Block on either a timeout on the handle
+					// or a result from the handle.
+					select {
+					case <-timeout:
+						for _, event := range events {
+							l.Queue.ReQueue(&event)
+						}
+					case resultValue = <-result:
+						for _, event := range events {
+							if resultValue {
+								l.Queue.Done(&event)
+							} else {
+								l.Queue.ReQueue(&event)
+							}
+						}
+
+						break
 					}
 				}()
 			case <-l.stop:

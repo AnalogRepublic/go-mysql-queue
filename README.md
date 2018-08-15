@@ -48,10 +48,17 @@ listener := &Listener{
 
 ctx := listener.Context()
 
-listener.Start(func(event Event) bool {
-    fmt.Println("Received event " + event.UID)
+// Define how many you want to fetch on each tick
+numToFetch := 2
+
+// Start the listener
+listener.Start(func(events []Event) bool {
+    for _, event := range events {    
+        fmt.Println("Received event " + event.UID)
+    }
+
     return true
-})
+}, numToFetch)
 
 fmt.Println("Listener started")
 
