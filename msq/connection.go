@@ -13,6 +13,7 @@ import (
 type ConnectionConfig struct {
 	Type     string
 	Host     string
+	Proto    string
 	Port     int
 	Username string
 	Password string
@@ -87,13 +88,24 @@ func (c *Connection) getType() string {
 func (c *Connection) getConnectionString() string {
 	dbType := c.getType()
 
+	if c.Config.Proto == "" {
+		c.Config.Proto = "tcp"
+	}
+
+	port := strconv.Itoa(c.Config.Port)
+	hostname := c.Config.Host
+
+	if port != "" {
+		hostname = fmt.Sprintf("%s:%s", c.Config.Host, port)
+	}
+
 	if dbType == "mysql" {
 		return fmt.Sprintf(
-			"%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=%s",
+			"%s:%s@%s(%s)/%s?charset=%s&parseTime=True&loc=%s",
 			c.Config.Username,
 			c.Config.Password,
-			c.Config.Host,
-			strconv.Itoa(c.Config.Port),
+			c.Config.Proto,
+			hostname,
 			c.Config.Database,
 			c.Config.Charset,
 			c.Config.Locale,
