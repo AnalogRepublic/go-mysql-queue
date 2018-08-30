@@ -37,7 +37,17 @@ func (c *Connection) Attempt() error {
 		c.Config.Charset = "utf8mb4"
 	}
 
-	db, err := gorm.Open(c.getType(), c.getConnectionString())
+	if c.Config.Proto == "" {
+		c.Config.Proto = "tcp"
+	}
+
+	connectionString := c.getConnectionString()
+
+	if c.Config.Logging {
+		fmt.Println("Connecting to " + connectionString)
+	}
+
+	db, err := gorm.Open(c.getType(), connectionString)
 
 	if err != nil {
 		return err
@@ -87,10 +97,6 @@ func (c *Connection) getType() string {
 
 func (c *Connection) getConnectionString() string {
 	dbType := c.getType()
-
-	if c.Config.Proto == "" {
-		c.Config.Proto = "tcp"
-	}
 
 	port := strconv.Itoa(c.Config.Port)
 	hostname := c.Config.Host
