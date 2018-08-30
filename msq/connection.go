@@ -101,7 +101,7 @@ func (c *Connection) getConnectionString() string {
 	port := strconv.Itoa(c.Config.Port)
 	hostname := c.Config.Host
 
-	if port != "" {
+	if port != "" || port != "0" {
 		hostname = fmt.Sprintf("%s:%s", c.Config.Host, port)
 	}
 
